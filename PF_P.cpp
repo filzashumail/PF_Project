@@ -8,6 +8,7 @@
 #include <iomanip>
 using namespace std;
 
+//MODULE 1
 // read config.txt and returns true if successful, false if file missing
 bool readConfig(const char* filename, int& numDepts, int& numFloors, int& numRooms)
 {
@@ -81,18 +82,151 @@ int getPositiveInt(const char* prompt)
     return value;
 }
 
+
+
+//MODULE 2
+
+bool findFreeRoom(int*** grid, int nd, int nf, int nr, int &d, int &f, int &r, int &scount){
+//saving original collision position
+int startD = d, startF = f, startR = r;
+
+for (int i = d; i < nd; i++){
+int startFloor;
+//if still in collision department, continue from collision floor
+if (i == d) {startFloor = f;}
+else{startFloor = 0;}
+for (int j = startFloor; j < nf; j++){
+int startRoom;
+//if still on exact collision floor, continue from next room
+if (i == d && j == f){startRoom = r + 1; }
+else{startRoom = 0;}
+for (int k = startRoom; k < nr; k++){
+scount++;
+// free room found
+if (*(*(*(grid + i) + j) + k) == 0){ d = i; f = j; r = k; return true; }}}}
+
+//If no room available after the randomly generated one, we loop around
+for (int i = 0; i <= startD; i++) {
+int endFloor;
+// stop at original floor in last department
+if (i == startD){endFloor = startF + 1;}
+else{endFloor = nf;}
+for (int j = 0; j < endFloor; j++){
+int endRoom;
+// stop at original room in collision floor
+if (i == startD && j == startF){endRoom = startR; }
+else { endRoom = nr; }
+for (int k = 0; k < endRoom; k++) {
+scount++;
+// free room found
+if (*(*(*(grid + i) + j) + k) == 0){
+d = i; f = j; r = k; return true; }}}}
+//no free room anywhere
+return false;
+}
+
+
+
+void enrollStudent(int*** grid, char** &names, int* &ids, float* &gpas, int* &statuses, int &numStudents, int nd, int nf, int nr){
+
+int d, f, r, scount = 0, newID; //scount = skip count
+char tname[100]; //temporary
+
+cout<<"Enter student name: ";
+cin.getline(tname, 100); 
+//validation
+if (strlen(tname) == 0){
+cout << "Invalid name" << endl;
+return;
+}
+
+//Before anything else check if there is room for another student
+//Generating a random dep, room and floor
+d = rand() % nd;
+f = rand() % nf;
+r = rand() % nr;
+
+//Checking if occupied (and finding next room)
+if (*(*(*(grid + d) + f) + r) != 0){ //!=0 so someone is in there
+bool findr = findFreeRoom(grid, nd, nf, nr, d, f, r, scount); //function to find a free room
+if(!findr){cout<<"All rooms are occupied!"<<endl;
+return;
+}}
+
+//allocating name now
+char* name = new char[strlen(tname) + 1]; //strlen(name)+1 bytes for the name
+for (int i = 0; i <= strlen(tname); i++)
+{name[i] = tname[i];}
+
+//giving sequential ID (using 1000 as staring point because it looks professional)
+newID = 1000+numStudents+1; 
+  
+//New array,copying, deleting old and updating pointer for Ids, names, gpa and statuses
+
+//IDS
+int* nIds = new int[numStudents + 1];
+for (int i = 0; i < numStudents; i++)
+{ nIds[i] = ids[i]; }
+nIds[numStudents] = newID; //the newest student at the end
+delete[] ids; //deleting the old array
+ids = nIds; //pointing to the new one
+
+//NAMES
+char** nnames = new char*[numStudents + 1]; 
+for (int i = 0; i < numStudents; i++)
+{ nnames[i] = names[i]; }
+nnames[numStudents] = name; //the newest student at the end
+delete[] names; //deleting the old array
+names = nnames; //pointing to the new one
+
+//GPA
+float* nGpas = new float[numStudents + 1]; //float cause GPA has decimals
+for (int i = 0; i < numStudents; i++) 
+{ nGpas[i] = gpas[i]; }
+nGpas[numStudents] = 0.0f; //new student so GPA is 0 
+delete[] gpas;
+gpas = nGpas;
+
+//STATUSES
+int* nStatus = new int[numStudents + 1];
+for (int i = 0; i < numStudents; i++)
+{ nStatus[i] = statuses[i]; }
+nStatus[numStudents] = 0; //we start at zero cause new student (studying)
+delete[] statuses;
+statuses = nStatus;
+
+//student count has now increased
+numStudents++;
+
+
+*(*(*(grid + d) + f) + r) = newID;
+
+//outputs
+cout << "\nStudent enrolled!" << endl;
+cout << "Assigned ID: " << newID << endl;
+cout << "Department: " << d << endl;
+cout << "Floor: " << f << endl;
+cout << "Room: " << r << endl;
+cout << "Slots skipped: " << scount << endl;
+
+
+
+
+}
+
 int main()
 {
-    srand(time(0));
+srand(time(0));
 
-    int*** CampusGrid = nullptr;
-    int numDepts = 0, numFloors = 0, numRooms = 0;
-    int numStudents = 0, step = 0, currentFloor = 0, currentDept = 0;
+int*** CampusGrid = nullptr;
+int numDepts = 0, numFloors = 0, numRooms = 0;
+int numStudents = 0, step = 0, currentFloor = 0, currentDept = 0;
+char** names    = nullptr;
+int*   ids      = nullptr;
+float* gpas     = nullptr;
+int*   statuses = nullptr;
+char choice;
 
-    char** names    = nullptr;
-    int*   ids      = nullptr;
-    float* gpas     = nullptr;
-    int*   statuses = nullptr;
 
     if (!readConfig("config.txt", numDepts, numFloors, numRooms))
     {
@@ -122,16 +256,47 @@ int main()
 
     cout << "Campus grid allocated and initialised. Total rooms: " << (numDepts * numFloors * numRooms) << endl;
 
-    // idhar se apna m2 ya smth krna
+cin.ignore(1000, '\n'); //clearing everything before getline
 
-    
+//MAIN MENU 
+//isko baqi modules kay waqt update karna ho ga, wo sari options bhi add karni hon gi
+
+//adding emojis takay mast main menu banay :3
+
+do {
+cout << "\n  \U0001F3EB  UniVault Main Menu\n" << endl;
+cout << "  \U0001F4DD  [E] Enroll Student" << endl;
+cout << "  \u23F3  [ENTER] Simulate Step" << endl;
+cout << "  \U0001F50D  [F] Find Student" << endl;
+cout << "  \U0001F9ED  [J] Jump to Dept/Floor" << endl;
+cout << "  \U0001F4BE  [S] Save" << endl;
+cout << "  \U0001F6AA  [X] Exit" << endl;
+cout << "\n Enter Option: ";
+cin >> choice;
+
+cin.ignore(1000, '\n');
+
+if (choice == 'E' || choice == 'e'){
+enrollStudent(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms);}
+else if (choice == 'X' || choice == 'x'){
+cout << "\n  \U0001F6AA  Exiting UniVault " << endl; break; }
+else {cout << "  \u26A0\uFE0F  invalid option" << endl; }
+ } while (true);//loop breaks with X
 
 
 
 
-    // deallocating memory
+// deallocating memory
+for (int i = 0; i < numStudents; i++){
+delete[] names[i];}
+delete[] names;
+delete[] ids;
+delete[] gpas;
+delete[] statuses;    
+
     freeCampus(CampusGrid, numDepts, numFloors);
     CampusGrid = nullptr;
+ 
 
     return 0;
 }
