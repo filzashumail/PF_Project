@@ -480,7 +480,6 @@ int main()
         {
             enrollStudent(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms);
         }
-        // bare Enter triggers a time step
         else if (choice == '\n')
         {
             runTimeStep(CampusGrid, names, ids, gpas, statuses, numStudents, step, numDepts, numFloors, numRooms);
