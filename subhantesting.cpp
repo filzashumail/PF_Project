@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
-#include <cstring>
+
 using namespace std;
 
 // MODULE 1
@@ -240,8 +240,7 @@ void enrollStudent(int*** grid, char** &names, int* &ids, float* &gpas, int* &st
 	delete[] gpas;
 	gpas = nGpas;
 
-
-        //STATUSES
+	//STATUSES
 	int* nStatus = new int[numStudents + 1];
 	for (int i = 0; i < numStudents; i++)
 	{
@@ -259,10 +258,11 @@ void enrollStudent(int*** grid, char** &names, int* &ids, float* &gpas, int* &st
 	//outputs
 	cout << "\nStudent enrolled!" << endl;
 	cout << "Assigned ID: " << newID << endl;
-	cout << "Department: " << d+1 << endl;
-	cout << "Floor: " << f+1 << endl;
-	cout << "Room: " << r+1 << endl;
+	cout << "Department: " << d << endl;
+	cout << "Floor: " << f << endl;
+	cout << "Room: " << r << endl;
 	cout << "Slots skipped: " << scount << endl;
+
 }
 
 // MODULE 3
@@ -338,15 +338,15 @@ void runTimeStep(int*** grid, char** &names, int* &ids, float* &gpas, int* &stat
             // scan entire grid to find and clear this student's room
             // students don't store coordinates so a full scan is required
             // pointer arithmetic mandatory — bracket indexing on grid is forbidden
-            for (int l = 0; l < nd; l++)
+            for (int i = 0; i < nd; i++)
             {
-                for (int m = 0; m < nf; m++)
+                for (int j = 0; j < nf; j++)
                 {
-                    for (int n = 0; n < nr; n++)
+                    for (int k = 0; k < nr; k++)
                     {
-                        if (*(*(*(grid + l) + m) + n) == ids[l])
+                        if (*(*(*(grid + i) + j) + k) == ids[i])
                         {
-                            *(*(*(grid + l) + m) + n) = 0;
+                            *(*(*(grid + i) + j) + k) = 0;
                         }
                     }
                 }
@@ -416,57 +416,7 @@ void runTimeStep(int*** grid, char** &names, int* &ids, float* &gpas, int* &stat
 }
 
 //MODULE 4
-void drawDashboard(int*** grid, char** names, int* ids, float* gpas, int* statuses, int numStudents, int nd, int nf, int nr, int currentDept, int currentFloor, int step){
- //clearing the screen
 
-int search, temID;
-
-//formatting
-cout<<"\n========================================================================================================\n"; 
-cout<<"                              UniVault  .  LIVE RESOURCE DASHBOARD                                               \n";
-cout<<"========================================================================================================\n";
-cout<<"\n[DEPT: " << right << setfill('0') << setw(2) << (currentDept+1) << " - CS]         [FLOORS: "<< setw(2) << nf << "]         [ROOMS: "<< setw(2) << nr << "]         [STEP: "<< setw(3) << step << "]\n";
-
-cout << setfill(' ');//to reset
-
-cout<<"\n--------------------------------------------------------------------------------------------------------\n";
-cout<< left;
-cout<< setw(24) << "ROOM ADDR" << setw(15) << "ID" << setw(24) << "NAME" << setw(15) << "GPA" << "STATUS";
-cout<<"\n--------------------------------------------------------------------------------------------------------\n";
-
-for(int i=0 ; i<nr ; i++){
-
-
-//for room adress (pointer notation in code)(void*)(&grid[currentDept][currentFloor][i])
-//ID = grid[currentDept][currentFloor][i];
-
-temID = *(*(*(grid + currentDept) + currentFloor) + i) ;
-
-
-//finding the index for names, gpa and status
-for(int j=0 ; j<numStudents ; j++){
-if(ids[j]==temID) { search = j; break; }}
-
-if (temID == 0) { 
-
-cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << setw(15) << "----" << setw(24) << "---------------" << setw(15) << "0.00" << "EMPTY" << endl; }
-
-else {
-
-if(statuses[search]==0) {
-cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << setw(15) << ( temID ) << setw(24) << ( *(names + search) ) << setw(15) << fixed << setprecision(2) << (*(gpas + search) ) << "STUDYING" << endl;}
-
-else if (statuses[search]==1) {
-cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << setw(15) << ( temID ) << setw(24) << ( *(names + search) ) << setw(15) << fixed << setprecision(2) << (*(gpas + search) ) << "WARNING \u26A0" << endl;}
-
-else if (statuses[search]==2) {
-cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << setw(15) << ( temID ) << setw(24) << ( *(names + search) ) << setw(15) << fixed << setprecision(2) << (*(gpas + search) ) << "GRADUATING \u2605" << endl;}
-}}
-cout<<"\n--------------------------------------------------------------------------------------------------------\n";
-cout<< "COMMANDS: [ENTER] Step  |  [E] Enroll  |  [J] Jump  |  [F] Find  |  [S] Save  |  [X] Exit\n";
-cout<<"\n========================================================================================================\n";
-
-}
 
 // MODULE 5
 
@@ -512,40 +462,40 @@ int main()
     CampusGrid = initCampus(numDepts, numFloors, numRooms);
 
     cout << "Campus grid allocated and initialised. Total rooms: " << (numDepts * numFloors * numRooms) << endl;
+    do
+    {
+        cout << "\n  \U0001F3EB  UniVault Main Menu\n" << endl;
+        cout << "  \U0001F4DD  [E] Enroll Student" << endl;
+        cout << "  \u23F3  [ENTER] Simulate Step" << endl;
+        cout << "  \U0001F50D  [F] Find Student" << endl;
+        cout << "  \U0001F9ED  [J] Jump to Dept/Floor" << endl;
+        cout << "  \U0001F4BE  [S] Save" << endl;
+        cout << "  \U0001F6AA  [X] Exit" << endl;
+        cout << "\n Enter Option: ";
 
+        choice = cin.get();
+        cin.ignore(1000, '\n');
 
-do {
-    
-    drawDashboard(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms, currentDept, currentFloor, step); 
-
-cin.get(choice);
-if (choice != '\n')         
-    { cin.ignore(1000, '\n'); }
-system("clear"); 
-if (choice == 'E' || choice == 'e')
-enrollStudent(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms);
-else if (choice == 'X' || choice == 'x')
-{ cout << "\nExiting UniVault" << endl; break; }
- else if (choice == '\n')
+        if (choice == 'E' || choice == 'e')
+        {
+            enrollStudent(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms);
+        }
+        // bare Enter triggers a time step
+        else if (choice == '\n')
         {
             runTimeStep(CampusGrid, names, ids, gpas, statuses, numStudents, step, numDepts, numFloors, numRooms);
         }
-else if (choice == 'J' || choice == 'j')
-{
-cout << "Enter Department (1 to " << numDepts << "): ";
-cin >> currentDept;
-cin.ignore(1000, '\n');
-currentDept--;
-cout << "Enter Floor (1 to " << numFloors << "): ";
-cin >> currentFloor;
-cin.ignore(1000, '\n');
-currentFloor--;
-//validation
-while (currentDept < 0 || currentDept >= numDepts) { cout<<"\nInvalid Department, Enter again: "; cin >> currentDept; }
-while (currentFloor < 0 || currentFloor >= numFloors) { cout<<"\nInvalid Floor, Enter again: "; cin >> currentFloor; }
-}
-else { cout << "Invalid option" << endl; }
-} while (true);
+        else if (choice == 'X' || choice == 'x')
+        {
+            cout << "\n  \U0001F6AA  Exiting UniVault " << endl;
+            break;
+        }
+        else
+        {
+            cout << "  \u26A0\uFE0F  invalid option" << endl;
+        }
+    }
+    while (true); //loop breaks with X
 
 
     // deallocating memory
@@ -564,7 +514,4 @@ else { cout << "Invalid option" << endl; }
     return 0;
 }
 
-
-//Rozzy chill rozzy chill rozzy chill rozzy chill rozzy chill rozzy chill rozzy chill rozzy chill rozzy chill
-// EVERYONE GET IN THE CAR WHAT THE IMPOSSIBLE THIS ISNT THE CAR NOOOOOOOOOOOO JOJO
-
+// EVERYONE GET IN THE CAR WHAT THE IMPOSSIBLE THIS ISNT THE CAR NOOOOOOOOOOOO
