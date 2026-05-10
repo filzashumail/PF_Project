@@ -344,7 +344,7 @@ void runTimeStep(int*** grid, char** &names, int* &ids, float* &gpas, int* &stat
                 {
                     for (int n = 0; n < nr; n++)
                     {
-                        if (*(*(*(grid + l) + m) + n) == ids[l])
+                        if (*(*(*(grid + l) + m) + n) == ids[i])
                         {
                             *(*(*(grid + l) + m) + n) = 0;
                         }
