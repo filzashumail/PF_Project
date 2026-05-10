@@ -87,86 +87,21 @@ int getPositiveInt(const char* prompt)
 //MODULE 2
 
 bool findFreeRoom(int*** grid, int nd, int nf, int nr, int &d, int &f, int &r, int &scount) {
-	//saving original collision position
-	int startD = d, startF = f, startR = r;
-
-	for (int i = d; i < nd; i++) 
-    {
-		int startFloor;
-		//if still in collision department, continue from collision floor
-		if (i == d)
-        { 
-            startFloor = f; 
-        }
-		else 
-        { 
-            startFloor = 0; 
-        }
-		for (int j = startFloor; j < nf; j++) 
-        {
-			int startRoom;
-			//if still on exact collision floor, continue from next room
-			if (i == d && j == f)
-            { 
-                startRoom = r + 1; 
-            }
-			else 
-            { 
-                startRoom = 0; 
-            }
-			for (int k = startRoom; k < nr; k++) 
-            {
-				scount++;
-				// free room found
-				if (*(*(*(grid + i) + j) + k) == 0) 
-                { 
-                    d = i; f = j; r = k; return true; 
-                }
-			}
-		}
-	}
-
-	//If no room available after the randomly generated one, we loop around
-	for (int i = 0; i <= startD; i++) 
-    {
-		int endFloor;
-		// stop at original floor in last department
-		if (i == startD) 
-        { 
-            endFloor = startF + 1; 
-        }
-		else 
-        { 
-            endFloor = nf; 
-        }
-		for (int j = 0; j < endFloor; j++) 
-        {
-			int endRoom;
-			// stop at original room in collision floor
-			if (i == startD && j == startF) 
-            { 
-                endRoom = startR; 
-            }
-			else 
-            { 
-                endRoom = nr; 
-            }
-			for (int k = 0; k < endRoom; k++) 
-            {
-				scount++;
-				// free room found
-				if (*(*(*(grid + i) + j) + k) == 0) 
-                {
-					d = i; f = j; r = k; 
-                    return true;
-				}
-			}
-		}
-	}
-	//no free room anywhere
-	return false;
+int j, k;  
+for (int i = d; i < nd; i++) {
+if (i==d) { j=f; }
+else { j=0;}
+        
+for ( j ; j < nf; j++) {
+if (i == d && j == f) { k=r+1; }
+else { k=0; }
+for ( k ; k < nr; k++) {
+if (*(*(*(grid + i) + j) + k) == 0) {
+d = i; f = j; r = k; return true;}
+else { scount++; }
+}}}
+ return false;
 }
-
 
 void enrollStudent(int*** grid, char** &names, int* &ids, float* &gpas, int* &statuses, int &numStudents, int nd, int nf, int nr)
 {
@@ -191,7 +126,7 @@ void enrollStudent(int*** grid, char** &names, int* &ids, float* &gpas, int* &st
 	//Checking if occupied (and finding next room)
 	if (*(*(*(grid + d) + f) + r) != 0) //!=0 so someone is in there
     { 
-		bool findr = findFreeRoom(grid, nd, nf, nr, d, f, r, scount); //function to find a free room
+		bool findr = findFreeRoom(grid, nd, nf, nr, d, f, r, scount); 
 		if (!findr) {
 			cout << "All rooms are occupied!" << endl;
 			return;
@@ -419,7 +354,7 @@ void runTimeStep(int*** grid, char** &names, int* &ids, float* &gpas, int* &stat
 void drawDashboard(int*** grid, char** names, int* ids, float* gpas, int* statuses, int numStudents, int nd, int nf, int nr, int currentDept, int currentFloor, int step){
  //clearing the screen
 
-int search, temID;
+int search , temID;
 
 //formatting
 cout<<"\n========================================================================================================\n"; 
@@ -439,7 +374,7 @@ for(int i=0 ; i<nr ; i++){
 
 //for room adress (pointer notation in code)(void*)(&grid[currentDept][currentFloor][i])
 //ID = grid[currentDept][currentFloor][i];
-
+search=-67;
 temID = *(*(*(grid + currentDept) + currentFloor) + i) ;
 
 
@@ -453,6 +388,8 @@ cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << s
 
 else {
 
+if(search!=-67){
+
 if(statuses[search]==0) {
 cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << setw(15) << ( temID ) << setw(24) << ( *(names + search) ) << setw(15) << fixed << setprecision(2) << (*(gpas + search) ) << "STUDYING" << endl;}
 
@@ -461,7 +398,7 @@ cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << s
 
 else if (statuses[search]==2) {
 cout<< setw(24) << ( (void*)(*(*(grid + currentDept) + currentFloor) + i) ) << setw(15) << ( temID ) << setw(24) << ( *(names + search) ) << setw(15) << fixed << setprecision(2) << (*(gpas + search) ) << "GRADUATING \u2605" << endl;}
-}}
+}}}
 cout<<"\n--------------------------------------------------------------------------------------------------------\n";
 cout<< "COMMANDS: [ENTER] Step  |  [E] Enroll  |  [J] Jump  |  [F] Find  |  [S] Save  |  [X] Exit\n";
 cout<<"\n========================================================================================================\n";
@@ -469,6 +406,78 @@ cout<<"\n=======================================================================
 }
 
 // MODULE 5
+
+
+
+
+
+//MODULE 6
+void loadDatabase(int*** grid, char** &names, int* &ids, float* &gpas, int* &statuses, int &numStudents, int nd, int nf, int nr){
+
+char temp[100];
+int d, f, r, temID;
+
+ifstream file("database.txt");
+if (!file.is_open()) { return; }
+file >> numStudents;
+names    = new char*[numStudents];
+ids      = new int[numStudents];
+gpas     = new float[numStudents];
+statuses = new int[numStudents];
+
+for (int i = 0; i < numStudents; i++) {
+file >> ids[i];
+file.ignore(); //skip space after id
+file.getline(temp, 100, '.'); //read name until .
+file >> gpas[i] >> statuses[i] >> d >> f >> r;
+file.ignore(); //skip newline
+
+//name 
+names[i] = new char[strlen(temp) + 1];
+for (int j = 0; j <= (int)strlen(temp); j++) {
+names[i][j] = temp[j]; }
+ }
+
+while (file >> d >> f >> r >> temID){
+*(*(*(grid + d) + f) + r) = temID;}
+
+    file.close();
+}    
+
+
+void saveDatabase(int*** grid, char** names, int* ids, float* gpas, int* statuses, int numStudents, int nd, int nf, int nr){
+
+int sdep=-67, sfloor=-67, sroom=-67;
+
+ofstream file("database.txt");
+file << numStudents << "\n";
+
+//finding dep, floor and room for each student 
+for (int i = 0; i < numStudents; i++){
+for (int l = 0; l < nd; l++){
+for (int m = 0; m < nf; m++){
+for (int n = 0; n < nr; n++){
+if (*(*(*(grid + l) + m) + n) == ids[i]) 
+{ sdep = l; sfloor = m; sroom = n; }}}}
+if (sdep != -67 && sfloor != -67 && sroom != -67) {
+
+file << ids[i] << " " << names[i] << ". " << fixed << setprecision(2) << gpas[i] << " " << statuses[i] << " " << sdep << " " << sfloor << " " << sroom << endl; 
+}}
+
+//Grid occupancy 
+for (int i = 0; i < numStudents; i++){ 
+for (int l = 0; l < nd; l++){
+for (int m = 0; m < nf; m++){
+for (int n = 0; n < nr; n++){
+if (*(*(*(grid + l) + m) + n) == ids[i]){ 
+sdep = l; sfloor = m; sroom = n; }}}}
+
+if (sdep != -67 && sfloor != -67 && sroom != -67) {
+file << sdep << " " << sfloor << " " << sroom << " " << ids[i] << endl; 
+}}
+file.close();
+
+} 
 
 
 // MAIN
@@ -512,7 +521,8 @@ int main()
     CampusGrid = initCampus(numDepts, numFloors, numRooms);
 
     cout << "Campus grid allocated and initialised. Total rooms: " << (numDepts * numFloors * numRooms) << endl;
-
+    
+loadDatabase(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms);
 
 do {
     
@@ -530,8 +540,15 @@ else if (choice == 'X' || choice == 'x')
         {
             runTimeStep(CampusGrid, names, ids, gpas, statuses, numStudents, step, numDepts, numFloors, numRooms);
         }
+  else if (choice == 'S' || choice == 's')
+        {
+            saveDatabase(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms);
+        }
 else if (choice == 'J' || choice == 'j')
 {
+
+
+//This part js copy paste in module 5
 cout << "Enter Department (1 to " << numDepts << "): ";
 cin >> currentDept;
 cin.ignore(1000, '\n');
@@ -544,6 +561,10 @@ currentFloor--;
 while (currentDept < 0 || currentDept >= numDepts) { cout<<"\nInvalid Department, Enter again: "; cin >> currentDept; }
 while (currentFloor < 0 || currentFloor >= numFloors) { cout<<"\nInvalid Floor, Enter again: "; cin >> currentFloor; }
 }
+
+
+
+
 else { cout << "Invalid option" << endl; }
 } while (true);
 
