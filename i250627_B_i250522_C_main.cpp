@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
+#include <cstring>
 using namespace std;
 
 #include "module1.h"
@@ -27,7 +28,7 @@ int main()
 	float* gpas     = nullptr;
 	int*   statuses = nullptr;
 	char choice;
-
+        bool md3work = false;
 
 	if (!readfile("config.txt", numDepts, numFloors, numRooms))
 	{
@@ -58,10 +59,11 @@ int main()
     
 	loadDatabase(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms);
 
+         drawDashboard(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms, currentDept, currentFloor, step); 
+
 	do 
 	{
-		drawDashboard(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms, currentDept, currentFloor, step); 
-
+	        md3work=false;
 		cin.get(choice);
 		if (choice != '\n')         
 		{ 
@@ -76,7 +78,55 @@ int main()
 		}
 		else if (choice == '\n')
 		{
-			timeStep(CampusGrid, names, ids, gpas, statuses, numStudents, step, numDepts, numFloors, numRooms);
+			unsigned char flags = timeStep(CampusGrid, names, ids, gpas, statuses, numStudents, step, numDepts, numFloors, numRooms);
+		         drawDashboard(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms, currentDept, currentFloor, step); md3work=true;
+		         
+		     
+                 if (flags & 0x04)
+                 {
+                   for (int i = 0; i < numStudents; i++)
+                   {
+                 if (statuses[i] == 2)
+                 {
+                   for (int l = 0; l < numDepts; l++)
+                    for (int m = 0; m < numFloors; m++)
+                     for (int n = 0; n < numRooms; n++)
+                       if (*(*(*(CampusGrid+l)+m)+n) == ids[i])
+                                *(*(*(CampusGrid+l)+m)+n) = 0;
+
+                delete[] names[i];
+
+                for (int j = i; j < numStudents - 1; j++)
+                {
+                    names[j]    = names[j+1];
+                    ids[j]      = ids[j+1];
+                    gpas[j]     = gpas[j+1];
+                    statuses[j] = statuses[j+1];
+                }
+
+                char** newNames = new char*[numStudents-1];
+                for (int j = 0; j < numStudents-1; j++) newNames[j] = names[j];
+                delete[] names; names = newNames;
+
+                int* newIds = new int[numStudents-1];
+                for (int j = 0; j < numStudents-1; j++) newIds[j] = ids[j];
+                delete[] ids; ids = newIds;
+
+                float* newGpas = new float[numStudents-1];
+                for (int j = 0; j < numStudents-1; j++) newGpas[j] = gpas[j];
+                delete[] gpas; gpas = newGpas;
+
+                int* newStatuses = new int[numStudents-1];
+                for (int j = 0; j < numStudents-1; j++) newStatuses[j] = statuses[j];
+                delete[] statuses; statuses = newStatuses;
+
+                numStudents--;
+                i--;
+                }
+                }
+                }
+                	
+			 
 		}
 		else if (choice == 'S' || choice == 's')
 		{
@@ -97,6 +147,11 @@ int main()
         { 
             cout << "Invalid option" << endl; 
         }
+         if(!md3work)
+         {
+            drawDashboard(CampusGrid, names, ids, gpas, statuses, numStudents, numDepts, numFloors, numRooms, currentDept, currentFloor, step); 
+         }
+        
 	} while (true);
 
 
